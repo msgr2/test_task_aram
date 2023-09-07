@@ -1,0 +1,44 @@
+name: Deploy to demo
+on:
+  push:
+    branches: [ "demo" ]
+jobs:
+  stop-current-build:
+    runs-on: demo-v2
+    steps:
+      - run: docker stop node-dev || true
+      - run: docker rm node-dev || true
+      - run: ./vendor/bin/sail down || true
+      - uses: actions/checkout@v3
+
+  build:
+    runs-on: demo-v2
+    needs: stop-current-build
+    steps:
+      - run: docker build -t composer-local docker/composer/
+      - run: docker run --rm -v ${PWD}/:/app -w /app -u 1000 composer-local composer install
+  
+  #  build_node:
+  #    runs-on: demo-v2
+  #    needs: build
+  #    container:
+  #      image: node
+  #      volumes:
+  #        - .:/app
+  #    steps:
+  #      - run: cd /app/nuxt && npm install
+  #      - run: chown -R 1000:1000 .
+  #
+  deploy:
+    runs-on: demo-v2
+    needs: build
+    steps:
+      - run: |
+          sed -i '/^ARG single_binary_location_url/s/^/#/g' ./docker/clickhouse/Dockerfile
+          sed -i '/#ARG single_binary_location_url.*amd64/s/^#//g' ./docker/clickhouse/Dockerfile
+          sed -i '/image: yandex.clickhouse-server/s/^/#/g' docker-compose.yml
+      - run: cp .env.example .env
+      - run: ./vendor/bin/sail up -d
+      - run: sleep 60 && ./vendor/bin/sail artisan migrate:fresh --seed
+      - run: ./vendor/bin/sail artisan jwt:secret --force
+#      - run: docker run --name node-dev --network host -d -v .:/app -w /app/nuxt -u 1000 node npm run dev
