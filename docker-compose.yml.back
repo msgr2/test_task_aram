@@ -28,7 +28,6 @@ services:
             - memcached
             - meilisearch
             - mailhog
-            - rabbitmq
 
     pgsql:
         image: 'postgres:14'
@@ -81,17 +80,6 @@ services:
             test: [ "CMD", "wget", "--no-verbose", "--spider",  "http://localhost:7700/health" ]
             retries: 3
             timeout: 5s
-    rabbitmq:
-        image: "rabbitmq:3.8-management"
-        ports:
-            - '5672:5672'  # RabbitMQ main port
-            - '15672:15672'  # RabbitMQ management UI port
-        environment:
-          RABBITMQ_ERLANG_COOKIE: "your-erlang-cookie"  # Replace with your own Erlang cookie
-        volumes:
-           - 'rabbitmq_data:/var/lib/rabbitmq/mnesia'
-        networks:
-            - sail
 
     mailhog:
         image: 'mailhog/mailhog:latest'
@@ -111,6 +99,3 @@ volumes:
         driver: local
     sail-meilisearch:
         driver: local
-    rabbitmq_data:
-        driver: local
-

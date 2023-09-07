@@ -7,6 +7,7 @@ use App\Http\Controllers\CustomFieldsController;
 use App\Http\Controllers\DataFilesController;
 use App\Http\Controllers\MobileNetworksController;
 use App\Http\Controllers\OffersController;
+use App\Http\Controllers\RabbitMQMessageController;
 use App\Http\Controllers\SegmentsController;
 use App\Http\Controllers\SmsCampaignOffersController;
 use App\Http\Controllers\SmsCampaignsController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\SmsRoutingSmppConnectionsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -33,6 +35,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('v1')->group(function () {
+    //RabbitMQ 
+    Route::get("message", [RabbitMQMessageController::class,'index']);
 
     Route::prefix('token')->group(function () {
         Route::post('login', [AuthController::class, 'login']);
@@ -77,8 +81,10 @@ Route::prefix('v1')->group(function () {
                         ->name('smpp-connections.store');
                     Route::post('smpp-connections/test', [SmsRoutingSmppConnectionsController::class, 'test'])
                         ->name('smpp-connections.test');
-                    Route::get('smpp-connections/{smpp_connection}/view',
-                        [SmsRoutingSmppConnectionsController::class, 'show'])
+                    Route::get(
+                        'smpp-connections/{smpp_connection}/view',
+                        [SmsRoutingSmppConnectionsController::class, 'show']
+                    )
                         ->name('smpp-connections.show');
                 });
 
@@ -102,14 +108,18 @@ Route::prefix('v1')->group(function () {
 
             Route::resource('campaigns', SmsCampaignsController::class)
                 ->only(['index', 'store', 'update', 'destroy']);
-//                ->parameters(['smsCampaign' => 'campaign']);
+            //                ->parameters(['smsCampaign' => 'campaign']);
 
             Route::prefix('campaigns/{campaign}')->name('campaigns.')->group(function () {
-                Route::resource('texts', SmsCampaignTextsController::class)->only(['index',
-                    'store', 'update', 'destroy']);
+                Route::resource('texts', SmsCampaignTextsController::class)->only([
+                    'index',
+                    'store', 'update', 'destroy'
+                ]);
                 Route::resource('senderids', SmsCampaignSenderidsController::class)
-                    ->only(['index',
-                        'store', 'update', 'destroy']);
+                    ->only([
+                        'index',
+                        'store', 'update', 'destroy'
+                    ]);
                 Route::resource('offers', SmsCampaignOffersController::class)
                     ->only(['index', 'store', 'update', 'destroy']);
 
@@ -118,8 +128,10 @@ Route::prefix('v1')->group(function () {
             });
         });
 
-        Route::resource('offers', OffersController::class)->only(['index', 'store', 'update',
-            'destroy']);
+        Route::resource('offers', OffersController::class)->only([
+            'index', 'store', 'update',
+            'destroy'
+        ]);
     });
 });
 

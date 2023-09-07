@@ -76,3 +76,46 @@ run `lnav storage/logs/laravel.log`
 
 - frontend: https://v2-frontend.vercel.app/ (https://github.com/msgr2/v2_frontend)
 - url shortener: https://github.com/msgr2/v2_shortener
+
+
+# Commit from Pitangent
+
+# For RabbitMQ setup you need to add following in .env file
+
+QUEUE_CONNECTION=rabbitmq
+
+MQ_HOST=rabbitmq
+MQ_PORT=5672
+MQ_VHOST=/
+MQ_LOGIN=guest
+MQ_PASS=guest
+MQ_USER=guest
+
+# For sending SMS using Twilio you need to setup Twilio following in .env file
+TWILIO_SID=<YOUR_TWILIO_SID>
+TWILIO_AUTH_TOKEN=<YOUR_TWILIO_AUTH_TOKEN>
+TWILIO_NUMBER=<YOUR_TWILIO_NUMBER>
+
+# For send SMS you need to change the following details in App\Http\Controllers\RabbitMQMessageController
+$receiverDetails = [
+    /**
+        * Where to send a text message (your cell phone?), 
+        * For trial period ,currently it's only supported registered number
+        * This number is used for demo purpose
+        */
+    'phone' => '+911234567890'
+];
+
+# For send SMS you need to hit the below api
+
+http://v2.local:8888/api/v1/message, it is GET request
+
+# For consume the message you need to run below command in terminal
+
+sudo docker exec -it msgr_v2-laravel.test-1 php artisan mq:consume
+
+# RabbitMQ provide a default UI, you need to hit the below URL in browser
+http://v2.local:15672/
+
+
+
